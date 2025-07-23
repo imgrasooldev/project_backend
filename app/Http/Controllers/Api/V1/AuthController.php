@@ -15,25 +15,22 @@ class AuthController extends BaseController
     {
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $authUser = Auth::user();
-            $success['token'] =  $authUser->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
-            $success['name'] =  $authUser->name;
-
+            $success['token'] = $authUser->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+            $success['name'] = $authUser->name;
             return $this->sendResponse($success, 'User signed in');
         } else {
             return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
         }
     }
+
     public function signup(SignUpRequest $request)
     {
         $user = User::create($request->all());
-
         // To send custom welcome email for testing queues with redis
-        dispatch(new \App\Jobs\EmailJobs\Auth\SendRegisterMailJob($request->email));
+        // dispatch(new \App\Jobs\EmailJobs\Auth\SendRegisterMailJob($request->email));
         // event(new Registered($user));
-
-        $success['token'] =  $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
-        $success['user'] =  new UserResource($user);
-
+        $success['token'] = $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+        $success['user'] = new UserResource($user);
         return $this->sendResponse($success, 'User created successfully.');
     }
 }
