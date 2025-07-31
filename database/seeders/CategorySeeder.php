@@ -1,10 +1,10 @@
 <?php
+
 namespace Database\Seeders;
 
-use App\Models\Category;
 use Illuminate\Database\Seeder;
+use App\Models\Category;
 use App\Models\Subcategory;
-
 
 class CategoriesTableSeeder extends Seeder
 {

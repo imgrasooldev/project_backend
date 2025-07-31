@@ -43,6 +43,7 @@ Route::group([
     Route::apiResource('invoices', InvoiceController::class);
 
     Route::prefix('categories')->group(function () {
+    Route::get('search-category-list-dropdown', [CategoryController::class, 'searchCategoryListDropdown']);
     Route::get('/', [CategoryController::class, 'index']);       // GET /api/v1/categories
     Route::post('/', [CategoryController::class, 'store']);      // POST /api/v1/categories
     Route::get('{id}', [CategoryController::class, 'show']);     // GET /api/v1/categories/{id}
