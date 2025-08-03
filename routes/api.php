@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\ServiceProviderController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -43,13 +44,24 @@ Route::group([
     Route::apiResource('invoices', InvoiceController::class);
 
     Route::prefix('categories')->group(function () {
-    Route::get('search-category-list-dropdown', [CategoryController::class, 'searchCategoryListDropdown']);
-    Route::get('/', [CategoryController::class, 'index']);       // GET /api/v1/categories
-    Route::post('/', [CategoryController::class, 'store']);      // POST /api/v1/categories
-    Route::get('{id}', [CategoryController::class, 'show']);     // GET /api/v1/categories/{id}
-    Route::put('{id}', [CategoryController::class, 'update']);   // PUT /api/v1/categories/{id}
-    Route::delete('{id}', [CategoryController::class, 'destroy']);// DELETE /api/v1/categories/{id}
-});
+        Route::get('search-category-list-dropdown', [CategoryController::class, 'searchCategoryListDropdown']);
+        Route::get('/', [CategoryController::class, 'index']);       // GET /api/v1/categories
+        Route::post('/', [CategoryController::class, 'store']);      // POST /api/v1/categories
+        Route::get('{id}', [CategoryController::class, 'show']);     // GET /api/v1/categories/{id}
+        Route::put('{id}', [CategoryController::class, 'update']);   // PUT /api/v1/categories/{id}
+        Route::delete('{id}', [CategoryController::class, 'destroy']);// DELETE /api/v1/categories/{id}
+    });
 
-    Route::post('invoices/bulk', ['uses' => 'InvoiceController@bulkStore']);
+     Route::prefix('service-providers')->group(function () {
+        // Route::get('/service-profiles', [ServiceProfileController::class, 'index']);
+        // Route::get('search-category-list-dropdown', [CategoryController::class, 'searchCategoryListDropdown']);
+        Route::get('/', [ServiceProviderController::class, 'index']);       // GET /api/v1/categories
+        // Route::post('/', [CategoryController::class, 'store']);      // POST /api/v1/categories
+        // Route::get('{id}', [CategoryController::class, 'show']);     // GET /api/v1/categories/{id}
+        // Route::put('{id}', [CategoryController::class, 'update']);   // PUT /api/v1/categories/{id}
+        // Route::delete('{id}', [CategoryController::class, 'destroy']);// DELETE /api/v1/categories/{id}
+    });
+
+
+    // Route::post('invoices/bulk', ['uses' => 'InvoiceController@bulkStore']);
 });

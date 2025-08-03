@@ -9,8 +9,9 @@ use App\Models\Category;
 use App\Models\Subcategory;
 use App\Http\Resources\V1\SearchCategoryResource;
 use App\Repositories\Interfaces\SubcategoryRepositoryInterface;
+use App\Http\Controllers\Api\BaseController;
 
-class CategoryController extends Controller
+class CategoryController extends BaseController
 {
     protected $categoryRepo;
     protected $subcategoryRepo;
@@ -51,7 +52,8 @@ public function __construct(CategoryRepositoryInterface $categoryRepo, Subcatego
 
      public function searchCategoryListDropdown(){
         $subcategories = $this->subcategoryRepo->all(); // ✅ Now using repository
-        return SearchCategoryResource::collection($subcategories);
+        $dataGet = SearchCategoryResource::collection($subcategories);
+         return $this->sendResponse($dataGet,'Sub categories list fetched successfully');
     }
 
 

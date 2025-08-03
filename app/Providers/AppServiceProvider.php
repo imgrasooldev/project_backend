@@ -8,6 +8,8 @@ use App\Repositories\Interfaces\CategoryRepositoryInterface;
 use App\Repositories\Eloquent\CategoryRepository;
 use App\Repositories\Interfaces\SubcategoryRepositoryInterface;
 use App\Repositories\Eloquent\SubcategoryRepository;
+use App\Repositories\Interfaces\ServiceProviderRepositoryInterface;
+use App\Repositories\Eloquent\ServiceProviderRepository;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -17,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(SubcategoryRepositoryInterface::class, SubcategoryRepository::class);
+        $this->app->bind(ServiceProviderRepositoryInterface::class, ServiceProviderRepository::class);
     }
 
     /**
