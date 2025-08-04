@@ -22,6 +22,10 @@ class ServiceProfile extends Model
         return $this->belongsTo(Category::class);
     }
 
+     public function subcategory(){
+        return $this->belongsTo(Subcategory::class, 'subcategory_id');
+    }
+
     public function area()
     {
         return $this->belongsTo(Area::class);

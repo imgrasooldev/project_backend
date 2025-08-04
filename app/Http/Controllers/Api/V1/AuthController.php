@@ -33,4 +33,19 @@ class AuthController extends BaseController
         $success['user'] = new UserResource($user);
         return $this->sendResponse($success, 'User created successfully.');
     }
+
+     public function signout(Request $request)
+{
+    $user = $request->user();
+
+    if ($user && $user->currentAccessToken()) {
+        $user->currentAccessToken()->delete();
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'User logged out successfully.'
+    ]);
+}
+
 }
