@@ -19,8 +19,8 @@ class ServiceProviderResource extends JsonResource
                 'name' => $this->subcategory->name,
             ] : null,
             'experience' => $this->experience,
-            'available_days' => $this->available_days,
-            'available_time' => $this->available_time,
+            'available_days' => $this->available_days ?? null,
+            'available_time' => $this->available_time ?? null,
             'user' => [
                 'id' => $this->user->id,
                 'name' => $this->user->name,
@@ -33,10 +33,10 @@ class ServiceProviderResource extends JsonResource
                 'id' => $this->category->id,
                 'name' => $this->category->name,
             ],
-            'area' => [
-            'id' => $this->area->id,
-            'name' => $this->area->name,
-            ],
+            'area' => $this->area ? [
+    'id' => $this->area->id,
+    'name' => $this->area->name,
+] : null,
         ];
     }
 }

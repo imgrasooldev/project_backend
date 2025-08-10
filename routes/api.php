@@ -56,7 +56,10 @@ Route::group([
     });
 
      Route::prefix('service-providers')->group(function () {
+        Route::get('user-services', [ServiceProviderController::class, 'getUserServices']);
         Route::get('/', [ServiceProviderController::class, 'index']);       // GET /api/v1/categories
+        Route::post('/', [ServiceProviderController::class, 'store']); // ✅ New create route
+
     });
 
 

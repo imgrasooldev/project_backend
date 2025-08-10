@@ -7,14 +7,20 @@ use App\Filters\V1\ServiceProviderFilter;
 use App\Http\Resources\V1\ServiceProviderCollection;
 use App\Http\Controllers\Api\BaseController;
 use App\Repositories\Interfaces\ServiceProviderRepositoryInterface;
+use App\Http\Requests\V1\StoreServiceProfileRequest;
+use App\Http\Resources\V1\ServiceProviderResource;
+use App\Services\Api\V1\ServiceProfileService;
 
 class ServiceProviderController extends BaseController
 {
     protected $serviceProviderRepo;
+    private $serviceProfileService;
 
-    public function __construct(ServiceProviderRepositoryInterface $serviceProviderRepo)
+    public function __construct(ServiceProviderRepositoryInterface $serviceProviderRepo, 
+        ServiceProfileService $serviceProfileService)
     {
         $this->serviceProviderRepo = $serviceProviderRepo;
+        $this->serviceProfileService = $serviceProfileService;
     }
 
     public function index(Request $request)
@@ -37,4 +43,43 @@ class ServiceProviderController extends BaseController
 
         return $this->sendResponse($serviceProvider, 'Service Provider fetched successfully.');
     }
+
+    public function store(StoreServiceProfileRequest $request)
+{
+    $newService = $this->serviceProfileService->createServiceProfileFromUser(
+        $request->validated(),
+        $request->user()
+    );
+
+    return $this->sendResponse(
+        new ServiceProviderResource($newService),
+        'Service created successfully.'
+    );
+}
+
+
+
+
+
+    public function getUserServices(Request $request){
+        // Get the authenticated user from Sanctum token
+        $user = $request->user();
+
+        if (!$user) {
+            return $this->sendError('Unauthorized', [], 401);
+        }
+
+        // Optional: Pagination size
+        $perPage = $request->input('per_page', 10);
+
+        // Fetch the services related to the logged-in user
+        // Adjust the relation name (services) according to your model relationship
+        $services = $user->services()->paginate($perPage);
+
+        // Wrap in collection if you’re using a Resource/Collection
+        $success = new ServiceProviderCollection($services);
+
+        return $this->sendResponse($success, 'User services retrieved successfully.');
+    }
+
 }
