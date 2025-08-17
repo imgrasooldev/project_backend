@@ -12,6 +12,10 @@ use App\Repositories\Interfaces\ServiceProviderRepositoryInterface;
 use App\Repositories\Eloquent\ServiceProviderRepository;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\Eloquent\UserRepository;
+use App\Repositories\Interfaces\JobPostRepositoryInterface;
+use App\Repositories\Eloquent\JobPostRepository;
+use App\Repositories\Interfaces\JobApplicationPostRepositoryInterface;
+use App\Repositories\Eloquent\JobApplicationRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +28,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SubcategoryRepositoryInterface::class, SubcategoryRepository::class);
         $this->app->bind(ServiceProviderRepositoryInterface::class, ServiceProviderRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(JobPostRepositoryInterface::class, JobPostRepository::class);
+$this->app->bind(
+    \App\Repositories\Interfaces\JobApplicationRepositoryInterface::class,
+    \App\Repositories\Eloquent\JobApplicationRepository::class
+);
+
+
     }
 
     /**

@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ServiceProviderController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\JobPostController;
+use App\Http\Controllers\Api\V1\JobApplicationController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -55,12 +58,37 @@ Route::group([
         Route::delete('{id}', [CategoryController::class, 'destroy']);// DELETE /api/v1/categories/{id}
     });
 
-     Route::prefix('service-providers')->group(function () {
+    Route::prefix('service-providers')->group(function () {
         Route::get('user-services', [ServiceProviderController::class, 'getUserServices']);
         Route::get('/', [ServiceProviderController::class, 'index']);       // GET /api/v1/categories
         Route::post('/', [ServiceProviderController::class, 'store']); // ✅ New create route
 
     });
+
+
+    Route::prefix('job-posts')->group(function () {
+        Route::get('other_user_offer', [JobPostController::class, 'otherUserOffer']);
+        Route::get('service_request', [JobPostController::class, 'serviceRequest']);
+        Route::post('/direct', [JobPostController::class, 'store']); // alias for direct requests
+        Route::get('/', [JobPostController::class, 'index']);       // GET /api/v1/categories
+        Route::post('/', [JobPostController::class, 'store']);      // POST /api/v1/categories
+        Route::get('{id}', [JobPostController::class, 'show']);     // GET /api/v1/categories/{id}
+        Route::put('{id}', [JobPostController::class, 'update']);   // PUT /api/v1/categories/{id}
+        Route::delete('{id}', [JobPostController::class, 'destroy']);// DELETE /api/v1/categories/{id}
+
+    });
+
+    Route::prefix('job-applications')->group(function () {
+        Route::post('/{id}/approve', [JobApplicationController::class, 'approve']);
+        Route::get('/', [JobApplicationController::class, 'index']);
+        Route::post('/', [JobApplicationController::class, 'store']);
+        Route::get('/{id}', [JobApplicationController::class, 'show']);
+        Route::put('/{id}', [JobApplicationController::class, 'update']);
+        Route::delete('/{id}', [JobApplicationController::class, 'destroy']);
+
+    });
+
+
 
 
     // Route::post('invoices/bulk', ['uses' => 'InvoiceController@bulkStore']);
