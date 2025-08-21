@@ -98,7 +98,7 @@ public function otherUserOffer(Request $request)
     // Only posts where provider_id is null (unassigned)
     $filterItems[] = ['providerId', 'eq', null];
 
-    $jobPosts = $this->jobPostRepo->filter($filterItems, $perPage, $request->query());
+    $jobPosts = $this->jobPostRepo->filter($filterItems, $perPage, $request->query(), $user->id);
 
     return $this->sendResponse(
         new JobPostCollection($jobPosts),

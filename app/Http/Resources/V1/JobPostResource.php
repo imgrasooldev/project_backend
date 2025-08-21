@@ -14,6 +14,8 @@ class JobPostResource extends JsonResource
             'description'   => $this->description,
             'desired_date'  => $this->desired_date,
             'desired_time'  => $this->desired_time,
+            'created_at'  => $this->created_at,
+            'updated_at'  => $this->updated_at,
             'seeker' => [
                 'id'    => $this->seeker->id,
                 'name'  => $this->seeker->name,
@@ -32,6 +34,8 @@ class JobPostResource extends JsonResource
                 'id'   => $this->subCategory->id,
                 'name' => $this->subCategory->name,
             ],
+            'applications_count' => $this->applications_count ?? 0,
+            'user_applied' => $this->applications && $this->applications->isNotEmpty(),
         ];
     }
 }

@@ -24,9 +24,9 @@ class JobPostRepository extends BaseRepository implements JobPostRepositoryInter
         ->findOrFail($id);
     }
 
-    public function filter(array $filters, $perPage = 10, array $queryParams = [])
+    public function filter(array $filters, $perPage = 10, array $queryParams = [], $userId = null)
     {
-        $query = JobPost::with(['seeker', 'provider', 'category', 'subCategory']);
+        $query = JobPost::with(['seeker', 'provider', 'category', 'subCategory'])->withCount('applications');
 
         $columnMap = [
             'seekerId'      => 'seeker_id',
@@ -53,6 +53,13 @@ class JobPostRepository extends BaseRepository implements JobPostRepositoryInter
             }
 
         }
+
+        // If userId is provided, eager load a flag for whether the user applied
+    if ($userId) {
+        $query->with(['applications' => function($q) use ($userId) {
+            $q->where('provider_id', $userId);
+        }]);
+    }
          // Order by id descending
         $query->orderBy('id', 'desc');
 
