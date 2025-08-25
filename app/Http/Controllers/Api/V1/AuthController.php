@@ -8,6 +8,8 @@ use App\Http\Resources\V1\UserResource;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Auth;
+use Illuminate\Support\Facades\Hash; // Add this import
+use Illuminate\Support\Str;
 
 class AuthController extends BaseController
 {
@@ -46,6 +48,110 @@ class AuthController extends BaseController
         'success' => true,
         'message' => 'User logged out successfully.'
     ]);
+}
+
+/* public function googleLogin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'name' => 'required|string',
+            'google_id' => 'required|string',
+            'avatar' => 'nullable|url',
+        ]);
+
+        try {
+            // Find user by google_id or email
+            $user = User::where('google_id', $request->google_id)
+                        ->orWhere('email', $request->email)
+                        ->first();
+
+            if ($user) {
+                // Update existing user with Google data
+                $user->update([
+                    'google_id' => $request->google_id,
+                    'avatar' => $request->avatar,
+                    'last_login_at' => now(),
+                ]);
+            } else {
+                // Create new user for Google authentication
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'google_id' => $request->google_id,
+                    'avatar' => $request->avatar,
+                    'password' => Hash::make(Str::random(24)), // Random password for Google users
+                    'user_type_id' => 1, // Default user type, adjust as needed
+                    'last_login_at' => now(),
+                ]);
+            }
+
+            // Generate token
+            $token = $user->createToken('google-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+
+            $success = [
+                'token' => $token,
+                'user' => new UserResource($user),
+            ];
+
+            return $this->sendResponse($success, 'Google login successful.');
+
+        } catch (\Exception $e) {
+            return $this->sendError('Google login failed.', ['error' => $e->getMessage()], 500);
+        }
+    } */
+
+        public function googleLogin(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'name' => 'required|string',
+        'google_id' => 'required|string',
+        'avatar' => 'nullable|url',
+    ]);
+
+    try {
+        // Find user by google_id or email
+        $user = User::where('google_id', $request->google_id)
+                    ->orWhere('email', $request->email)
+                    ->first();
+
+        if ($user) {
+            // Update existing user with Google data
+            $user->update([
+                'google_id' => $request->google_id,
+                'avatar' => $request->avatar,
+                'last_login_at' => now(),
+                'name' => $request->name, // Update name in case it changed
+            ]);
+        } else {
+            // Create new user for Google authentication with proper defaults
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'google_id' => $request->google_id,
+                'avatar' => $request->avatar,
+                'password' => Hash::make(Str::random(24)), // Random password for Google users
+                'user_type_id' => 1, // Default user type (required field)
+                'phone' => null, // Explicitly set to null
+                'city_id' => null, // Explicitly set to null
+                'bio' => null, // Explicitly set to null
+                'last_login_at' => now(),
+            ]);
+        }
+
+        // Generate token
+        $token = $user->createToken('google-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+
+        $success = [
+            'token' => $token,
+            'user' => new UserResource($user),
+        ];
+
+        return $this->sendResponse($success, 'Google login successful.');
+
+    } catch (\Exception $e) {
+        return $this->sendError('Google login failed.', ['error' => $e->getMessage()], 500);
+    }
 }
 
 }

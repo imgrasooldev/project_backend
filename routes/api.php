@@ -40,7 +40,9 @@ Route::group([
     Route::withoutMiddleware('auth:sanctum')->group(function () {
         Route::post('login', [AuthController::class, 'signin']);
         Route::post('register', [AuthController::class, 'signup']);
+        Route::post('google-login', [AuthController::class, 'googleLogin']); // Add this line
     });
+    
     Route::post('logout', [AuthController::class, 'signout']);
     Route::get('/user/profile', [UserController::class, 'profile']);
 

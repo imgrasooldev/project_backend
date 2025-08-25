@@ -39,10 +39,15 @@ class User extends Authenticatable
     protected $fillable = [
 
         'name',
-
         'email',
-
         'password',
+        'phone',
+        'user_type_id',
+        'city_id',
+        'bio',
+        'google_id', // Add this
+        'avatar',    // Add this
+        'last_login_at', // Add this
 
     ];
 
@@ -91,6 +96,9 @@ class User extends Authenticatable
     protected $casts = [
 
         'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
+        'user_type_id' => 'integer', // Ensure proper casting
+        'city_id' => 'integer', // Ensure proper casting
 
     ];
 
@@ -99,6 +107,12 @@ class User extends Authenticatable
     return $this->hasMany(ServiceProfile::class, 'user_id', 'id');
 }
 
-
+ protected $attributes = [
+        'user_type_id' => 1, // Default user type
+        'phone' => null,
+        'city_id' => null,
+        'bio' => null,
+    ];
+    
 }
 
