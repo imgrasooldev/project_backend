@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\ServiceProviderController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\JobPostController;
 use App\Http\Controllers\Api\V1\JobApplicationController;
+use App\Http\Controllers\Api\V1\LocationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,6 +91,7 @@ Route::group([
 
     });
 
+    Route::post('update-location', [LocationController::class, 'update']);
 
 
 
