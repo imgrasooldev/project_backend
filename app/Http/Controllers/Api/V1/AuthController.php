@@ -11,6 +11,7 @@ use App\Models\User;
 use Auth;
 use Illuminate\Support\Facades\Hash; // Add this import
 use Illuminate\Support\Str;
+use App\Models\UserDeviceToken;
 
 use App\Services\Api\V1\GoogleAuthService;
 
@@ -22,6 +23,20 @@ class AuthController extends BaseController
             $authUser = Auth::user();
             $success['token'] = $authUser->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
             $success['name'] = $authUser->name;
+
+             // 🔹 Save Device Token
+        if ($request->has('device_token')) {
+            UserDeviceToken::updateOrCreate(
+                ['device_token' => $request->device_token],
+                [
+                    'user_id' => $authUser->id,
+                    'device_type' => $request->device_type ?? 'android',
+                    'device_name' => $request->device_name ?? null,
+                ]
+            );
+        }
+
+
             return $this->sendResponse($success, 'User signed in');
         } else {
             return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
@@ -35,6 +50,19 @@ class AuthController extends BaseController
         // dispatch(new \App\Jobs\EmailJobs\Auth\SendRegisterMailJob($request->email));
         // event(new Registered($user));
         $success['token'] = $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+        
+        // Save Device Token if available
+    if ($request->has('device_token')) {
+        UserDeviceToken::updateOrCreate(
+            ['device_token' => $request->device_token],
+            [
+                'user_id' => $user->id,
+                'device_type' => $request->device_type ?? 'android',
+                'device_name' => $request->device_name ?? null,
+            ]
+        );
+    }
+    
         $success['user'] = new UserResource($user);
         return $this->sendResponse($success, 'User created successfully.');
     }
@@ -65,6 +93,19 @@ class AuthController extends BaseController
             'token' => $token,
             'user' => new UserResource($user),
         ];
+
+        if ($request->has('device_token')) {
+    UserDeviceToken::updateOrCreate(
+        ['device_token' => $request->device_token],
+        [
+            'user_id' => $user->id,
+            'device_type' => $request->device_type ?? 'android',
+            'device_name' => $request->device_name ?? null,
+        ]
+    );
+}
+
+
 
         return $this->sendResponse($success, 'Google login successful.');
     } catch (\Exception $e) {

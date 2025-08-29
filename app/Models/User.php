@@ -114,5 +114,11 @@ class User extends Authenticatable
         'bio' => null,
     ];
     
+    public function deviceTokens()
+{
+    return $this->hasMany(UserDeviceToken::class);
+}
+
+    
 }
 
