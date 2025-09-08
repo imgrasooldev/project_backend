@@ -20,7 +20,7 @@ class JobPostRepository extends BaseRepository implements JobPostRepositoryInter
 
     public function find($id)
     {
-        return JobPost::with(['seeker', 'provider', 'category', 'subCategory'])
+        return JobPost::with(['seeker', 'provider', 'category', 'subCategory', 'applications.provider'])
         ->findOrFail($id);
     }
 

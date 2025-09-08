@@ -36,6 +36,8 @@ class JobPostResource extends JsonResource
             ],
             'applications_count' => $this->applications_count ?? 0,
             'user_applied' => $this->applications && $this->applications->isNotEmpty(),
+            // 👇 Will only appear in show() because only find() eager loads applications
+            'applications' => JobApplicationResource::collection($this->whenLoaded('applications')),
         ];
     }
 }

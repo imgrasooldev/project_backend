@@ -107,9 +107,9 @@ class JobApplicationController extends BaseController
     /**
  * Seeker approves a job application
  */
-public function approve($id, Request $request)
-{
-     try {
+    public function approve($id, Request $request)
+    {
+       try {
         $application = $this->jobApplicationService->approveApplication($id, $request->user());
 
         return $this->sendResponse(
@@ -120,5 +120,24 @@ public function approve($id, Request $request)
         return $this->sendError($e->getMessage(), [], 422);
     }
 }
+
+
+/**
+ * Seeker withdraws a job application
+ */
+public function withdraw($id, Request $request)
+{
+    try {
+        $application = $this->jobApplicationService->withdrawApplication($id, $request->user());
+
+        return $this->sendResponse(
+            new JobApplicationResource($application),
+            'Job application withdrawn successfully.'
+        );
+    } catch (\Exception $e) {
+        return $this->sendError($e->getMessage(), [], 422);
+    }
+}
+
 
 }

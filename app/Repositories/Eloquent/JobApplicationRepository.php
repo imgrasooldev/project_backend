@@ -18,8 +18,8 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
     public function all($perPage = 10)
     {
         return JobApplication::with(['jobPost', 'provider'])
-            ->orderBy('id', 'desc')
-            ->paginate($perPage);
+        ->orderBy('id', 'desc')
+        ->paginate($perPage);
     }
 
     /**
@@ -28,7 +28,7 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
     public function find($id)
     {
         return JobApplication::with(['jobPost', 'provider'])
-            ->findOrFail($id);
+        ->findOrFail($id);
     }
 
     /**
@@ -52,7 +52,7 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
                 $query->whereIn($column, $values);
             } elseif ($operator === 'ne') {
                 $query->where($column, '!=', $value)
-                      ->whereNotNull($column);
+                ->whereNotNull($column);
             } elseif ($operator === 'eq') {
                 if (is_null($value)) {
                     $query->whereNull($column);
@@ -68,27 +68,43 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
     }
 
     public function findByJobAndProvider($jobPostId, $providerId)
-{
-    return JobApplication::where('job_post_id', $jobPostId)
-                         ->where('provider_id', $providerId)
-                         ->first();
-}
+    {
+        return JobApplication::where('job_post_id', $jobPostId)
+        ->where('provider_id', $providerId)
+        ->first();
+    }
 
-public function approveApplication($applicationId)
-{
-    $application = $this->find($applicationId);
+    public function approveApplication($applicationId)
+    {
+        $application = $this->find($applicationId);
 
-    $application->status = 'accepted';
-    $application->save();
+        $application->status = 'accepted';
+        $application->save();
 
-    $jobPost = $application->jobPost;
-    $jobPost->provider_id = $application->provider_id;
-    $jobPost->status = 'assigned';
+        $jobPost = $application->jobPost;
+        $jobPost->provider_id = $application->provider_id;
+        $jobPost->status = 'assigned';
+        $jobPost->save();
+
+        return $application;
+    }
+
+    public function withdrawApplication($applicationId)
+    {
+        $application = $this->find($applicationId);
+
+    // Update job application
+        $application->status = 'withdrawn';
+        $application->save();
+
+    // Update job post back to open
+        $jobPost = $application->jobPost;
+        $jobPost->status = 'open';
+    $jobPost->provider_id = null; // remove assigned provider if needed
     $jobPost->save();
 
     return $application;
 }
-
 
 
 

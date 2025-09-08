@@ -83,6 +83,7 @@ Route::group([
 
     Route::prefix('job-applications')->group(function () {
         Route::post('/{id}/approve', [JobApplicationController::class, 'approve']);
+        Route::post('/{id}/withdraw', [JobApplicationController::class, 'withdraw']);
         Route::get('/', [JobApplicationController::class, 'index']);
         Route::post('/', [JobApplicationController::class, 'store']);
         Route::get('/{id}', [JobApplicationController::class, 'show']);

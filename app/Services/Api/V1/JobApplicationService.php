@@ -5,14 +5,16 @@ namespace App\Services\Api\V1;
 use App\Repositories\Interfaces\JobApplicationRepositoryInterface;
 use App\Models\User;
 use App\Models\JobPost;
+use App\Services\FirebaseService;
 
 class JobApplicationService
 {
     protected $jobApplicationRepo;
 
-    public function __construct(JobApplicationRepositoryInterface $jobApplicationRepo)
+    public function __construct(JobApplicationRepositoryInterface $jobApplicationRepo, FirebaseService $firebase)
     {
         $this->jobApplicationRepo = $jobApplicationRepo;
+        $this->firebase = $firebase;
     }
 
     /**
@@ -67,7 +69,61 @@ class JobApplicationService
             throw new \Exception('You are not authorized to approve this application.');
         }
 
-        return $this->jobApplicationRepo->approveApplication($applicationId);
+
+        $approvedApplication = $this->jobApplicationRepo->approveApplication($applicationId);
+
+    // ✅ Send notification to provider
+        $provider = $approvedApplication->provider;
+        if ($provider && $provider->all_device_tokens) {
+            foreach ($provider->all_device_tokens as $token) {
+                $this->firebase->sendNotification(
+                    $token,
+                    "Application Accepted 🎉",
+                    "Your application has been accepted.",
+                    [
+                        "application_id" => (string) $approvedApplication->id,   // ✅ cast to string
+                        "job_post_id"    => (string) $approvedApplication->jobPost->id, // ✅ cast to string
+                        "status"         => "accepted"
+                    ]
+                );
+
+            }
+        }
+
+        return $approvedApplication;
+
     }
+
+    public function withdrawApplication($applicationId, User $seeker)
+    {
+        $application = $this->jobApplicationRepo->find($applicationId);
+
+    // Ensure seeker is the job owner
+        if ($application->jobPost->seeker_id !== $seeker->id) {
+            throw new \Exception('You are not authorized to withdraw this application.');
+        }
+
+        $withdrawnApplication = $this->jobApplicationRepo->withdrawApplication($applicationId);
+
+    // ✅ Send notification to provider
+        $provider = $withdrawnApplication->provider;
+        if ($provider && $provider->all_device_tokens) {
+            foreach ($provider->all_device_tokens as $token) {
+                $this->firebase->sendNotification(
+                    $token,
+                    "Application Withdrawn ❌",
+                    "Your accepted application for '{$withdrawnApplication->jobPost->title}' has been withdrawn by {$seeker->name}.",
+                    [
+                        "application_id" => (string) $withdrawnApplication->id,
+                        "job_post_id"    => (string) $withdrawnApplication->jobPost->id,
+                        "status"         => "withdrawn"
+                    ]
+                );
+            }
+        }
+
+        return $withdrawnApplication;
+    }
+
 
 }

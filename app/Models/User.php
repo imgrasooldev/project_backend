@@ -119,6 +119,16 @@ class User extends Authenticatable
     return $this->hasMany(UserDeviceToken::class);
 }
 
+public function getLatestDeviceTokenAttribute()
+{
+    return optional($this->deviceTokens()->latest()->first())->device_token;
+}
+
+public function getAllDeviceTokensAttribute()
+{
+    return $this->deviceTokens()->pluck('device_token')->toArray();
+}
+
     
 }
 
