@@ -19,12 +19,20 @@ class AuthController extends BaseController
 {
     public function signin(Request $request)
     {
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        $request->validate([
+            'email_or_phone' => 'required',
+            'password' => 'required'
+        ]);
+
+    // 🔹 Determine if it's email or phone
+        $login_type = filter_var($request->email_or_phone, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        if (Auth::attempt([$login_type => $request->email_or_phone, 'password' => $request->password])) {
             $authUser = Auth::user();
             $success['token'] = $authUser->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
             $success['name'] = $authUser->name;
 
- // 🔹 Save Device Token
+        // 🔹 Save Device Token
             if ($request->has('device_token')) {
                 UserDeviceToken::updateOrCreate(
                     ['device_token' => $request->device_token],
@@ -36,22 +44,23 @@ class AuthController extends BaseController
                 );
             }
 
-
             return $this->sendResponse($success, 'User signed in');
         } else {
-            return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
+            return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials']);
         }
     }
 
+
     public function signup(SignUpRequest $request)
     {
-        $user = User::create($request->all());
-// To send custom welcome email for testing queues with redis
-// dispatch(new \App\Jobs\EmailJobs\Auth\SendRegisterMailJob($request->email));
-// event(new Registered($user));
-        $success['token'] = $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+        $data = $request->only(['name', 'email', 'phone', 'password']);
 
-// Save Device Token if available
+        $user = User::create($data);
+
+        $success['token'] = $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+        $success['user'] = new UserResource($user);
+
+    // Save Device Token if available
         if ($request->has('device_token')) {
             UserDeviceToken::updateOrCreate(
                 ['device_token' => $request->device_token],
@@ -63,9 +72,9 @@ class AuthController extends BaseController
             );
         }
 
-        $success['user'] = new UserResource($user);
         return $this->sendResponse($success, 'User created successfully.');
     }
+
 
     public function signout(Request $request)
     {
