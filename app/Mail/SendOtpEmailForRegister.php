@@ -41,7 +41,7 @@ class SendOtpEmailForRegister extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.Auth.SendOtpEmailForRegister',
+            markdown: 'Emails.Auth.SendOtpEmailForRegister',
         );
     }
 

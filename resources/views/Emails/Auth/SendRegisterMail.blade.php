@@ -1,13 +1,11 @@
 <x-mail::message>
-# Hello {{ $user->name }},
+# Introduction
 
-Your OTP for registration is:
+The body of your message.
 
-<x-mail::panel>
-{{ $otp }}
-</x-mail::panel>
-
-Please enter this OTP to verify your account.
+<x-mail::button :url="''">
+Button Text
+</x-mail::button>
 
 Thanks,<br>
 {{ config('app.name') }}

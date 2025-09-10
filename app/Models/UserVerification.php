@@ -9,7 +9,8 @@ class UserVerification extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'otp', 'type', 'is_verified'];
+    // ✅ Add expires_at to fillable
+    protected $fillable = ['user_id', 'otp', 'type', 'is_verified', 'expires_at'];
 
     public function user()
     {

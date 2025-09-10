@@ -125,16 +125,30 @@ class AuthController extends BaseController
         }
     }
 
+    // AuthController.php
     public function verifyOtp(Request $request, OtpServiceForRegister $otpService)
-{
-    $request->validate([
-        'otp' => 'required|digits:6',
-        'type' => 'required|in:email,phone',
-    ]);
+    {
+        $request->validate([
+            'otp' => 'required|digits:6',
+        ]);
 
-    $user = $request->user(); // Get user from token
+    $user = $request->user(); // Authenticated user
 
-    if ($otpService->verifyOtp($user, $request->otp, $request->type)) {
+    if (!$user) {
+        return $this->sendError('Unauthenticated.', [], 401);
+    }
+
+    // Determine OTP type automatically
+    $type = null;
+    if ($user->email) {
+        $type = 'email';
+    } elseif ($user->phone) {
+        $type = 'phone';
+    } else {
+        return $this->sendError('No contact info available for OTP.');
+    }
+
+    if ($otpService->verifyOtp($user, $request->otp, $type)) {
         return $this->sendResponse([], 'OTP verified successfully.');
     } else {
         return $this->sendError('Invalid or expired OTP.');
@@ -143,21 +157,27 @@ class AuthController extends BaseController
 
 
 
+
 public function resendOtp(Request $request, OtpServiceForRegister $otpService)
 {
-    $user = $request->user(); // authenticated user
+    $user = $request->user(); // Authenticated user
 
     if (!$user) {
         return $this->sendError('Unauthenticated.', [], 401);
     }
 
+    // Determine OTP type automatically
+    $type = null;
     if ($user->email) {
-        $otpService->sendOtp($user, 'email');
+        $type = 'email';
     } elseif ($user->phone) {
-        $otpService->sendOtp($user, 'phone');
+        $type = 'phone';
     } else {
         return $this->sendError('No contact info available for OTP.');
     }
+
+    // Send OTP
+    $otpService->sendOtp($user, $type);
 
     return $this->sendResponse([], 'OTP resent successfully.');
 }
