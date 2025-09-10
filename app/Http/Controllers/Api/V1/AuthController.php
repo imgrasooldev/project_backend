@@ -17,6 +17,68 @@ use App\Services\Api\V1\OtpServiceForRegister;
 
 class AuthController extends BaseController
 {
+    // public function signin(Request $request)
+    // {
+    //     $request->validate([
+    //         'email_or_phone' => 'required',
+    //         'password' => 'required'
+    //     ]);
+
+    // // 🔹 Determine if it's email or phone
+    //     $login_type = filter_var($request->email_or_phone, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+    //     if (Auth::attempt([$login_type => $request->email_or_phone, 'password' => $request->password])) {
+    //         $authUser = Auth::user();
+    //         $success['token'] = $authUser->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+    //         $success['name'] = $authUser->name;
+
+    //     // 🔹 Save Device Token
+    //         if ($request->has('device_token')) {
+    //             UserDeviceToken::updateOrCreate(
+    //                 ['device_token' => $request->device_token],
+    //                 [
+    //                     'user_id' => $authUser->id,
+    //                     'device_type' => $request->device_type ?? 'android',
+    //                     'device_name' => $request->device_name ?? null,
+    //                 ]
+    //             );
+    //         }
+
+    //         return $this->sendResponse($success, 'User signed in');
+    //     } else {
+    //         return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials']);
+    //     }
+    // }
+
+
+    // public function signup(SignUpRequest $request, OtpServiceForRegister $otpService)
+    // {
+    //     $data = $request->only(['name', 'email', 'phone', 'password']);
+
+    //     $user = User::create($data);
+
+    //     // Send OTP for verification
+    //     $otpService->sendOtp($user);
+
+    //     $success['token'] = $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+    //     $success['user'] = new UserResource($user);
+
+    // // Save Device Token if available
+    //     if ($request->has('device_token')) {
+    //         UserDeviceToken::updateOrCreate(
+    //             ['device_token' => $request->device_token],
+    //             [
+    //                 'user_id' => $user->id,
+    //                 'device_type' => $request->device_type ?? 'android',
+    //                 'device_name' => $request->device_name ?? null,
+    //             ]
+    //         );
+    //     }
+
+    //     return $this->sendResponse($success, 'User created successfully.');
+    // }
+
+
     public function signin(Request $request)
     {
         $request->validate([
@@ -24,46 +86,41 @@ class AuthController extends BaseController
             'password' => 'required'
         ]);
 
-    // 🔹 Determine if it's email or phone
         $login_type = filter_var($request->email_or_phone, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
         if (Auth::attempt([$login_type => $request->email_or_phone, 'password' => $request->password])) {
-            $authUser = Auth::user();
-            $success['token'] = $authUser->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
-            $success['name'] = $authUser->name;
+            $user = Auth::user();
 
-        // 🔹 Save Device Token
+            $token = $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+
             if ($request->has('device_token')) {
                 UserDeviceToken::updateOrCreate(
                     ['device_token' => $request->device_token],
                     [
-                        'user_id' => $authUser->id,
+                        'user_id' => $user->id,
                         'device_type' => $request->device_type ?? 'android',
                         'device_name' => $request->device_name ?? null,
                     ]
                 );
             }
 
-            return $this->sendResponse($success, 'User signed in');
+            return $this->sendResponse([
+                'token' => $token,
+                'user' => new UserResource($user)
+            ], 'User signed in');
         } else {
             return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials']);
         }
     }
 
-
     public function signup(SignUpRequest $request, OtpServiceForRegister $otpService)
     {
         $data = $request->only(['name', 'email', 'phone', 'password']);
-
         $user = User::create($data);
 
         // Send OTP for verification
         $otpService->sendOtp($user);
 
-        $success['token'] = $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
-        $success['user'] = new UserResource($user);
-
-    // Save Device Token if available
         if ($request->has('device_token')) {
             UserDeviceToken::updateOrCreate(
                 ['device_token' => $request->device_token],
@@ -75,8 +132,12 @@ class AuthController extends BaseController
             );
         }
 
-        return $this->sendResponse($success, 'User created successfully.');
+        return $this->sendResponse([
+            'token' => $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken,
+            'user' => new UserResource($user)
+        ], 'User created successfully.');
     }
+    
 
 
     public function signout(Request $request)
