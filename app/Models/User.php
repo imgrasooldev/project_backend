@@ -129,6 +129,13 @@ public function getAllDeviceTokensAttribute()
     return $this->deviceTokens()->pluck('device_token')->toArray();
 }
 
+
+public function verifications()
+{
+    return $this->hasMany(UserVerification::class);
+}
+
+
     
 }
 

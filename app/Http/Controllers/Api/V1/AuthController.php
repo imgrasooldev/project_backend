@@ -12,8 +12,8 @@ use Auth;
 use Illuminate\Support\Facades\Hash; // Add this import
 use Illuminate\Support\Str;
 use App\Models\UserDeviceToken;
-
 use App\Services\Api\V1\GoogleAuthService;
+use App\Services\Api\V1\OtpServiceForRegister;
 
 class AuthController extends BaseController
 {
@@ -51,11 +51,14 @@ class AuthController extends BaseController
     }
 
 
-    public function signup(SignUpRequest $request)
+    public function signup(SignUpRequest $request, OtpServiceForRegister $otpService)
     {
         $data = $request->only(['name', 'email', 'phone', 'password']);
 
         $user = User::create($data);
+
+        // Send OTP for verification
+        $otpService->sendOtp($user);
 
         $success['token'] = $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
         $success['user'] = new UserResource($user);
@@ -121,5 +124,46 @@ class AuthController extends BaseController
             return $this->sendError('Google login failed.', ['error' => $e->getMessage()], 500);
         }
     }
+
+    public function verifyOtp(Request $request, OtpServiceForRegister $otpService)
+{
+    $request->validate([
+        'otp' => 'required|digits:6',
+        'type' => 'required|in:email,phone',
+    ]);
+
+    $user = $request->user(); // Get user from token
+
+    if ($otpService->verifyOtp($user, $request->otp, $request->type)) {
+        return $this->sendResponse([], 'OTP verified successfully.');
+    } else {
+        return $this->sendError('Invalid or expired OTP.');
+    }
+}
+
+
+
+public function resendOtp(Request $request, OtpServiceForRegister $otpService)
+{
+    $user = $request->user(); // authenticated user
+
+    if (!$user) {
+        return $this->sendError('Unauthenticated.', [], 401);
+    }
+
+    if ($user->email) {
+        $otpService->sendOtp($user, 'email');
+    } elseif ($user->phone) {
+        $otpService->sendOtp($user, 'phone');
+    } else {
+        return $this->sendError('No contact info available for OTP.');
+    }
+
+    return $this->sendResponse([], 'OTP resent successfully.');
+}
+
+
+
+
 
 }

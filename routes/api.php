@@ -44,6 +44,8 @@ Route::group([
         Route::post('google-login', [AuthController::class, 'googleLogin']); // Add this line
     });
     
+    Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('resend-otp', [AuthController::class, 'resendOtp']);
     Route::post('logout', [AuthController::class, 'signout']);
     Route::get('/user/profile', [UserController::class, 'profile']);
 
