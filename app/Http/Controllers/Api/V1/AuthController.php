@@ -187,11 +187,40 @@ class AuthController extends BaseController
     }
 
     // AuthController.php
-    public function verifyOtp(Request $request, OtpServiceForRegister $otpService)
-    {
-        $request->validate([
-            'otp' => 'required|digits:6',
-        ]);
+//     public function verifyOtp(Request $request, OtpServiceForRegister $otpService)
+//     {
+//         $request->validate([
+//             'otp' => 'required|digits:6',
+//         ]);
+
+//     $user = $request->user(); // Authenticated user
+
+//     if (!$user) {
+//         return $this->sendError('Unauthenticated.', [], 401);
+//     }
+
+//     // Determine OTP type automatically
+//     $type = null;
+//     if ($user->email) {
+//         $type = 'email';
+//     } elseif ($user->phone) {
+//         $type = 'phone';
+//     } else {
+//         return $this->sendError('No contact info available for OTP.');
+//     }
+
+//     if ($otpService->verifyOtp($user, $request->otp, $type)) {
+//         return $this->sendResponse([], 'OTP verified successfully.');
+//     } else {
+//         return $this->sendError('Invalid or expired OTP.');
+//     }
+// }
+
+public function verifyOtp(Request $request, OtpServiceForRegister $otpService)
+{
+    $request->validate([
+        'otp' => 'required|digits:6',
+    ]);
 
     $user = $request->user(); // Authenticated user
 
@@ -210,7 +239,28 @@ class AuthController extends BaseController
     }
 
     if ($otpService->verifyOtp($user, $request->otp, $type)) {
-        return $this->sendResponse([], 'OTP verified successfully.');
+
+        // 🔹 Generate token
+        $token = $user->createToken('admin-token', ['create', 'read', 'update', 'delete'])->plainTextToken;
+
+        // 🔹 Save device token if provided (optional)
+        if ($request->has('device_token')) {
+            UserDeviceToken::updateOrCreate(
+                ['device_token' => $request->device_token],
+                [
+                    'user_id' => $user->id,
+                    'device_type' => $request->device_type ?? 'android',
+                    'device_name' => $request->device_name ?? null,
+                ]
+            );
+        }
+
+        // 🔹 Return token and user data
+        return $this->sendResponse([
+            'token' => $token,
+            'user' => new UserResource($user)
+        ], 'OTP verified successfully.');
+        
     } else {
         return $this->sendError('Invalid or expired OTP.');
     }
