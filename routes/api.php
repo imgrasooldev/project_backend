@@ -39,9 +39,15 @@ Route::group([
 
 
     Route::withoutMiddleware('auth:sanctum')->group(function () {
+        
         Route::post('login', [AuthController::class, 'signin']);
         Route::post('register', [AuthController::class, 'signup']);
         Route::post('google-login', [AuthController::class, 'googleLogin']); // Add this line
+
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('verify-forgot-otp', [AuthController::class, 'verifyForgotOtp']); // <-- new
+        Route::post('reset-password', [AuthController::class, 'resetPassword']);
+        
     });
     
     Route::post('verify-otp', [AuthController::class, 'verifyOtp']);

@@ -14,6 +14,11 @@ use Illuminate\Support\Str;
 use App\Models\UserDeviceToken;
 use App\Services\Api\V1\GoogleAuthService;
 use App\Services\Api\V1\OtpServiceForRegister;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+
+
 
 class AuthController extends BaseController
 {
@@ -293,8 +298,143 @@ public function resendOtp(Request $request, OtpServiceForRegister $otpService)
     return $this->sendResponse([], 'OTP resent successfully.');
 }
 
+// forgot reset password methods will be here
+public function forgotPassword(Request $request)
+{
+    $request->validate(['email_or_phone' => 'required']);
+
+    $user = User::where('email', $request->email_or_phone)
+                ->orWhere('phone', $request->email_or_phone)
+                ->first();
+
+    if (!$user) {
+        return $this->sendError('User not found.', [], 404);
+    }
+
+    $otp = rand(100000, 999999);
+
+    // Store OTP (don't set token yet)
+    DB::table('password_reset_tokens')->updateOrInsert(
+        // Use either email or phone as keys. Keep it broad:
+        [
+            'email' => $user->email,
+            'phone' => $user->phone
+        ],
+        [
+            'otp' => $otp,
+            'token' => null,
+            'created_at' => Carbon::now(),
+        ]
+    );
+
+    // Send OTP via email or SMS
+    if ($user->email) {
+        Mail::raw("Your password reset OTP is: {$otp}", function ($message) use ($user) {
+            $message->to($user->email)->subject('Password Reset OTP');
+        });
+    }
+    // TODO: send SMS if phone exists and you have SMS gateway
+
+    return $this->sendResponse([], 'OTP sent successfully.');
+}
+
+public function verifyForgotOtp(Request $request)
+{
+    $request->validate([
+        'email_or_phone' => 'required',
+        'otp' => 'required|digits:6',
+    ]);
+
+    $user = User::where('email', $request->email_or_phone)
+                ->orWhere('phone', $request->email_or_phone)
+                ->first();
+
+    if (!$user) {
+        return $this->sendError('User not found.', [], 404);
+    }
+
+    $reset = DB::table('password_reset_tokens')
+        ->where(function ($q) use ($user) {
+            if ($user->email) $q->where('email', $user->email);
+            if ($user->phone) $q->orWhere('phone', $user->phone);
+        })
+        ->where('otp', $request->otp)
+        ->first();
+
+    if (!$reset) {
+        return $this->sendError('Invalid OTP.', [], 400);
+    }
+
+    // Expiry check (15 minutes)
+    if (Carbon::parse($reset->created_at)->addMinutes(15)->isPast()) {
+        return $this->sendError('OTP expired.', [], 400);
+    }
+
+    // Generate reset token, clear otp so OTP can't be reused
+    $resetToken = Str::random(80);
+
+    DB::table('password_reset_tokens')
+        ->where('id', $reset->id)
+        ->update([
+            'token' => $resetToken,
+            'otp' => null,
+            'created_at' => Carbon::now(), // reset created_at timer if you want
+        ]);
+
+    return $this->sendResponse(['reset_token' => $resetToken], 'OTP verified. Use reset_token to change password.');
+}
 
 
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'email_or_phone' => 'required',
+        'password' => 'required|min:6|confirmed',
+        'otp' => 'nullable|digits:6',
+        'reset_token' => 'nullable|string',
+    ]);
 
+    $user = User::where('email', $request->email_or_phone)
+                ->orWhere('phone', $request->email_or_phone)
+                ->first();
+
+    if (!$user) {
+        return $this->sendError('User not found.', [], 404);
+    }
+
+    // Lookup reset row by email/phone
+    $query = DB::table('password_reset_tokens')
+        ->where(function ($q) use ($user) {
+            if ($user->email) $q->where('email', $user->email);
+            if ($user->phone) $q->orWhere('phone', $user->phone);
+        });
+
+    // Prefer reset_token if present
+    if ($request->filled('reset_token')) {
+        $reset = $query->where('token', $request->reset_token)->first();
+    } else {
+        $reset = $query->where('otp', $request->otp)->first();
+    }
+
+    if (!$reset) {
+        return $this->sendError('Invalid reset token or OTP.', [], 400);
+    }
+
+    // Expiry check (token or otp should be recent)
+    if (Carbon::parse($reset->created_at)->addMinutes(60)->isPast()) {
+        return $this->sendError('Reset token expired.', [], 400);
+    }
+
+    // Update password
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    // Remove reset row to prevent reuse
+    DB::table('password_reset_tokens')
+        ->where('id', $reset->id)
+        ->delete();
+
+    return $this->sendResponse([], 'Password reset successfully.');
+}
 
 }
