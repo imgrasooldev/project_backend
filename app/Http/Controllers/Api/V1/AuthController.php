@@ -262,7 +262,7 @@ public function verifyOtp(Request $request, OtpServiceForRegister $otpService)
         ], 'OTP verified successfully.');
         
     } else {
-        return $this->sendError('Invalid or expired OTP.');
+        return $this->sendError('Invalid or expired OTP.', null, 400);
     }
 }
 
