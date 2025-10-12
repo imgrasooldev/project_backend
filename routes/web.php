@@ -35,6 +35,18 @@ Route::get('/', function () {
 
 });
 
+Route::get('/send-email', function () {
+    $to = "imgrasool@gmail.com";
+
+    Mail::raw("This is a test email from Laravel!", function ($message) use ($to) {
+        $message->to($to)
+                ->subject("Test Email");
+    });
+
+    return "Email sent successfully!";
+});
+
+
 Route::get('/send-test', [NotificationController::class, 'sendTest']);
 
 

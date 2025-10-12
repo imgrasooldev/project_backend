@@ -426,7 +426,7 @@ public function resetPassword(Request $request)
     }
 
     // Update password
-    $user->password = Hash::make($request->password);
+    $user->password = $request->password; 
     $user->save();
 
     // Remove reset row to prevent reuse

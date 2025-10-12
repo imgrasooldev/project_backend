@@ -101,8 +101,5 @@ Route::group([
     });
 
     Route::post('update-location', [LocationController::class, 'update']);
-
-
-
-    // Route::post('invoices/bulk', ['uses' => 'InvoiceController@bulkStore']);
+    
 });
