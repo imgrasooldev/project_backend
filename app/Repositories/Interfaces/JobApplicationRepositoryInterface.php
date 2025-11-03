@@ -10,5 +10,6 @@ interface JobApplicationRepositoryInterface
     public function filter(array $filters, $perPage = 10, array $queryParams = []);
     public function findByJobAndProvider($jobPostId, $providerId); // optional helper
     public function approveApplication($applicationId);
+    public function getByProviderGroupedByStatus($providerId);
 
 }

@@ -9,6 +9,8 @@ use App\Http\Resources\V1\JobApplicationResource;
 use App\Http\Resources\V1\JobApplicationCollection;
 use App\Services\Api\V1\JobApplicationService;
 use App\Repositories\Interfaces\JobApplicationRepositoryInterface;
+use App\Http\Resources\V1\JobApplicationGroupedResource;
+use App\Http\Resources\V1\JobApplicationGroupedCollection;
 
 class JobApplicationController extends BaseController
 {
@@ -138,6 +140,54 @@ public function withdraw($id, Request $request)
         return $this->sendError($e->getMessage(), [], 422);
     }
 }
+
+/**
+ * Update status of a job application dynamically
+ * Possible statuses: pending, accepted, rejected, withdrawn
+ */
+public function updateStatus($id, Request $request)
+{
+    try {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,accepted,rejected,withdrawn'
+        ]);
+
+        $application = $this->jobApplicationService->updateApplicationStatus(
+            $id,
+            $validated['status'],
+            $request->user()
+        );
+
+        return $this->sendResponse(
+            new JobApplicationResource($application),
+            "Job application status updated to '{$validated['status']}' successfully."
+        );
+    } catch (\Exception $e) {
+        return $this->sendError($e->getMessage(), [], 422);
+    }
+}
+
+
+
+
+/**
+ * Get all job applications of the logged-in provider grouped by status
+ */
+public function getProviderApplications(Request $request)
+{
+    try {
+        $providerId = $request->user()->id;
+        $applications = $this->jobApplicationRepo->getByProviderGroupedByStatus($providerId);
+
+        return $this->sendResponse(
+            new JobApplicationGroupedCollection($applications),
+            'Applications grouped by status fetched successfully.'
+        );
+    } catch (\Exception $e) {
+        return $this->sendError($e->getMessage(), [], 422);
+    }
+}
+
 
 
 }

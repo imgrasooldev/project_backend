@@ -45,4 +45,25 @@ class ServiceProviderRepository extends BaseRepository implements ServiceProvide
     return $this->model->with(['user', 'category', 'subcategory', 'area'])->findOrFail($id);
 }
 
+public function updateWithCategory($id, array $data)
+{
+    $serviceProfile = $this->model->findOrFail($id);
+
+    // Optional: Ensure only the owner can update
+    if (isset($data['user_id']) && $serviceProfile->user_id !== $data['user_id']) {
+        abort(403, 'Unauthorized to update this service.');
+    }
+
+    // Resolve category from subcategory if provided
+    if (isset($data['subcategory_id'])) {
+        $subcategory = \App\Models\Subcategory::findOrFail($data['subcategory_id']);
+        $data['category_id'] = $subcategory->category_id;
+    }
+
+    $serviceProfile->update($data);
+
+    return $serviceProfile;
+}
+
+
 }

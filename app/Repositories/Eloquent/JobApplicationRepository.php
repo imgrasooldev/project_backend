@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\JobApplication;
 use App\Repositories\Interfaces\JobApplicationRepositoryInterface;
+use App\Http\Resources\V1\JobApplicationResource;
 
 class JobApplicationRepository extends BaseRepository implements JobApplicationRepositoryInterface
 {
@@ -104,6 +105,72 @@ class JobApplicationRepository extends BaseRepository implements JobApplicationR
     $jobPost->save();
 
     return $application;
+}
+
+
+/*
+public function getByProviderGroupedByStatus($providerId)
+{
+    $query = JobApplication::with([
+        'jobPost:id,title,budget,status,desired_date,desired_time'
+    ])
+    ->where('provider_id', $providerId)
+    ->orderBy('applied_at', 'desc')
+    ->get();
+
+    // Group by status
+    $grouped = $query->groupBy('status')->map(function ($items) {
+        return JobApplicationResource::collection($items);
+    });
+
+    // Ensure all 4 statuses are always present
+    $statuses = ['pending', 'accepted', 'rejected', 'withdrawn'];
+    $final = collect([]);
+    foreach ($statuses as $status) {
+        $final[$status] = $grouped->get($status, collect([]));
+    }
+
+    return $final;
+}
+
+*/
+
+public function getByProviderGroupedByStatus($providerId)
+{
+    $query = JobApplication::with([
+        'jobPost' => function ($q) {
+            $q->with(['category', 'subCategory', 'seeker', 'provider']);
+        },
+        'provider'
+    ])
+    ->where('provider_id', $providerId)
+    ->orderBy('applied_at', 'desc')
+    ->get();
+
+    // Group by status
+    $grouped = $query->groupBy('status')->map(function ($items) {
+        return JobApplicationResource::collection($items);
+    });
+
+    // Ensure all 4 statuses are always present
+    $statuses = ['pending', 'accepted', 'rejected', 'withdrawn'];
+    $final = collect([]);
+    foreach ($statuses as $status) {
+        $final[$status] = $grouped->get($status, collect([]));
+    }
+
+    return $final;
+}
+
+
+public function updateStatus($applicationId, string $status)
+{
+    $application = $this->find($applicationId);
+
+    $application->status = $status;
+    $application->save();
+
+    return $application->fresh(['jobPost', 'provider']);
 }
 
 

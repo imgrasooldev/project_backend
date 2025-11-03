@@ -57,9 +57,19 @@ class ServiceProviderController extends BaseController
     );
 }
 
+public function update(StoreServiceProfileRequest $request, $id)
+{
+    $updatedService = $this->serviceProfileService->updateServiceProfileFromUser(
+        $id,
+        $request->validated(),
+        $request->user()
+    );
 
-
-
+    return $this->sendResponse(
+        new ServiceProviderResource($updatedService),
+        'Service updated successfully.'
+    );
+}
 
     public function getUserServices(Request $request){
         // Get the authenticated user from Sanctum token

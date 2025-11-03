@@ -5,6 +5,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\V1\NotificationController;
+use Illuminate\Support\Facades\Mail;
 
 
 /*
@@ -34,6 +35,23 @@ Route::get('/', function () {
     return view('welcome');
 
 });
+
+
+
+Route::get('/test-mail', function () {
+    try {
+        Mail::raw('Laravel direct web mail test', function ($msg) {
+            $msg->from('kaam@yolger.com', 'Kaam');
+            $msg->to('imgrasool@gmail.com');
+            $msg->subject('Laravel direct test');
+        });
+        return '✅ Sent successfully — check inbox/spam.';
+    } catch (\Exception $e) {
+        return '❌ Failed: ' . $e->getMessage();
+    }
+});
+
+
 
 Route::get('/send-email', function () {
     $to = "imgrasool@gmail.com";

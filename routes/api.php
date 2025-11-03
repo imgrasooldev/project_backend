@@ -73,6 +73,8 @@ Route::group([
         Route::get('user-services', [ServiceProviderController::class, 'getUserServices']);
         Route::get('/', [ServiceProviderController::class, 'index']);       // GET /api/v1/categories
         Route::post('/', [ServiceProviderController::class, 'store']); // ✅ New create route
+        Route::put('{id}', [ServiceProviderController::class, 'update']);
+
 
     });
 
@@ -91,7 +93,9 @@ Route::group([
 
     Route::prefix('job-applications')->group(function () {
         Route::post('/{id}/approve', [JobApplicationController::class, 'approve']);
+        Route::post('/{id}/status', [JobApplicationController::class, 'updateStatus']);
         Route::post('/{id}/withdraw', [JobApplicationController::class, 'withdraw']);
+        Route::get('/my-work-history', [JobApplicationController::class, 'getProviderApplications']);
         Route::get('/', [JobApplicationController::class, 'index']);
         Route::post('/', [JobApplicationController::class, 'store']);
         Route::get('/{id}', [JobApplicationController::class, 'show']);

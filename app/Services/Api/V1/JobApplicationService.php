@@ -126,4 +126,83 @@ class JobApplicationService
     }
 
 
+    public function updateApplicationStatus($applicationId, string $status, User $user)
+{
+    $application = $this->jobApplicationRepo->find($applicationId);
+
+    $validStatuses = ['pending', 'accepted', 'rejected', 'withdrawn'];
+    if (!in_array($status, $validStatuses)) {
+        throw new \Exception('Invalid status provided.');
+    }
+
+    $jobPost = $application->jobPost;
+
+    // ✅ Authorization: Only seeker can modify status
+    if ($jobPost->seeker_id !== $user->id) {
+        throw new \Exception('You are not authorized to update this application.');
+    }
+
+    // ✅ Update status using repository
+    $updatedApplication = $this->jobApplicationRepo->updateStatus($applicationId, $status);
+
+    // ✅ Determine message and job post status
+    $notificationTitle = '';
+    $notificationBody = '';
+    $jobPostStatus = null;
+
+    switch ($status) {
+        case 'pending':
+            $notificationTitle = "Application Pending ⏳";
+            $notificationBody = "Your application for '{$jobPost->title}' is now pending.";
+            $jobPostStatus = 'open';
+            break;
+
+        case 'accepted':
+            $notificationTitle = "Application Accepted 🎉";
+            $notificationBody = "Your application for '{$jobPost->title}' has been accepted.";
+            $jobPostStatus = 'assigned';
+            break;
+
+        case 'rejected':
+            $notificationTitle = "Application Rejected ❌";
+            $notificationBody = "Your application for '{$jobPost->title}' has been rejected.";
+            $jobPostStatus = 'open';
+            break;
+
+        case 'withdrawn':
+            $notificationTitle = "Application Withdrawn 💤";
+            $notificationBody = "Your application for '{$jobPost->title}' has been withdrawn by {$user->name}.";
+            $jobPostStatus = 'open';
+            break;
+    }
+
+    // ✅ Update job post if necessary
+    if ($jobPostStatus) {
+        $jobPost->status = $jobPostStatus;
+        $jobPost->provider_id = ($status === 'accepted') ? $application->provider_id : null;
+        $jobPost->save();
+    }
+
+    // ✅ Send Firebase notification to provider
+    $provider = $updatedApplication->provider;
+    if ($provider && $provider->all_device_tokens) {
+        foreach ($provider->all_device_tokens as $token) {
+            $this->firebase->sendNotification(
+                $token,
+                $notificationTitle,
+                $notificationBody,
+                [
+                    'application_id' => (string) $updatedApplication->id,
+                    'job_post_id'    => (string) $updatedApplication->jobPost->id,
+                    'status'         => $status,
+                ]
+            );
+        }
+    }
+
+    return $updatedApplication;
+}
+
+
+
 }
