@@ -62,6 +62,27 @@ class JobPostController extends BaseController
     }
 }
 
+public function update(StoreJobPostRequest $request, $id)
+{
+    try {
+        $updatedPost = $this->jobPostService->updateJobPostFromUser(
+            $id,
+            $request->validated(),
+            $request->user()
+        );
+
+        return $this->sendResponse(
+            new JobPostResource($updatedPost),
+            'Job post updated successfully.'
+        );
+
+    } catch (\Exception $e) {
+        return $this->sendError($e->getMessage(), [], 422);
+    }
+}
+
+
+
 public function getUserJobPosts(Request $request)
 {
     $user = $request->user();

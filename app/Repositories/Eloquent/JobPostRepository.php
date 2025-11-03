@@ -65,4 +65,19 @@ class JobPostRepository extends BaseRepository implements JobPostRepositoryInter
 
         return $query->paginate($perPage)->appends($queryParams);
     }
+
+    public function updateJobPost($id, array $data)
+{
+    $jobPost = $this->model->findOrFail($id);
+
+    // Optional: Ensure only owner (seeker) can update
+    if (isset($data['seeker_id']) && $jobPost->seeker_id !== $data['seeker_id']) {
+        abort(403, 'Unauthorized to update this job post.');
+    }
+
+    $jobPost->update($data);
+
+    return $jobPost;
+}
+
 }

@@ -58,4 +58,41 @@ class JobPostService
 
         return $this->jobPostRepo->create($inputData);
     }
+
+    public function updateJobPost($id, array $inputData)
+{
+    // Auto-resolve category if subcategory is changed
+    if (isset($inputData['sub_category_id'])) {
+        $subcategory = \App\Models\Subcategory::findOrFail($inputData['sub_category_id']);
+        $inputData['category_id'] = $subcategory->category_id;
+    }
+
+    // Rebuild title/description if type is 'direct'
+    if (($inputData['type'] ?? null) === 'direct') {
+        $provider = \App\Models\User::find($inputData['provider_id']);
+        $providerName = $provider ? $provider->name : 'Provider';
+
+        $subCategory = \App\Models\SubCategory::find($inputData['sub_category_id']);
+        $subCategoryName = $subCategory ? $subCategory->name : 'Service';
+
+        $seeker = \App\Models\User::find($inputData['seeker_id']);
+        $seekerName = $seeker ? $seeker->name : 'Customer';
+
+        $inputData['title'] = "{$seekerName} updated a {$subCategoryName} request to {$providerName}";
+        $inputData['description'] = "{$seekerName} updated the request for {$subCategoryName} service with {$providerName} on {$inputData['desired_date']} at {$inputData['desired_time']}.";
+    }
+
+    // Update repository
+    $jobPost = $this->jobPostRepo->updateJobPost($id, $inputData);
+
+    return $this->jobPostRepo->find($id);
+}
+
+public function updateJobPostFromUser($id, array $inputData, User $user)
+{
+    $inputData['seeker_id'] = $user->id;
+    return $this->updateJobPost($id, $inputData);
+}
+
+
 }
