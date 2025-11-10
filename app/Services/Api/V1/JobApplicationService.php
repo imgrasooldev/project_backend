@@ -187,7 +187,7 @@ class JobApplicationService
     $provider = $updatedApplication->provider;
     if ($provider && $provider->all_device_tokens) {
         foreach ($provider->all_device_tokens as $token) {
-            $this->firebase->sendNotification(
+            /* $this->firebase->sendNotification(
                 $token,
                 $notificationTitle,
                 $notificationBody,
@@ -196,7 +196,22 @@ class JobApplicationService
                     'job_post_id'    => (string) $updatedApplication->jobPost->id,
                     'status'         => $status,
                 ]
-            );
+            ); */
+            $this->firebase->sendNotificationAndSave([
+    'sender_id'      => $user->id,
+    'receiver_id'    => $provider->id,
+    'application_id' => $updatedApplication->id,
+    'status'         => $status,
+    'title'          => $notificationTitle,
+    'body'           => $notificationBody,
+    'data'           => [
+        'application_id' => (string) $updatedApplication->id,
+        'job_post_id'    => (string) $updatedApplication->jobPost->id,
+        'status'         => $status,
+    ],
+    'device_token'   => $token ?? null,
+]);
+
         }
     }
 

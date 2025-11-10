@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\JobPostController;
 use App\Http\Controllers\Api\V1\JobApplicationController;
 use App\Http\Controllers\Api\V1\LocationController;
-
+use App\Http\Controllers\Api\V1\NotificationController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -92,9 +92,9 @@ Route::group([
     });
 
     Route::prefix('job-applications')->group(function () {
-        Route::post('/{id}/approve', [JobApplicationController::class, 'approve']);
+        // Route::post('/{id}/approve', [JobApplicationController::class, 'approve']);
         Route::post('/{id}/status', [JobApplicationController::class, 'updateStatus']);
-        Route::post('/{id}/withdraw', [JobApplicationController::class, 'withdraw']);
+        // Route::post('/{id}/withdraw', [JobApplicationController::class, 'withdraw']);
         Route::get('/my-work-history', [JobApplicationController::class, 'getProviderApplications']);
         Route::get('/', [JobApplicationController::class, 'index']);
         Route::post('/', [JobApplicationController::class, 'store']);
@@ -105,5 +105,14 @@ Route::group([
     });
 
     Route::post('update-location', [LocationController::class, 'update']);
+   
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/{id}', [NotificationController::class, 'show']);
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    });
+
+
     
 });

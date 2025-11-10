@@ -6,35 +6,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class JobApplicationGroupedResource extends JsonResource
 {
-    // public function toArray($request): array
-    // {
-    //     return [
-    //         'id'              => $this->id,
-    //         'job_post_id'     => $this->job_post_id,
-    //         'cover_letter'    => $this->cover_letter,
-    //         'proposed_budget' => $this->proposed_budget,
-    //         'status'          => $this->status,
-    //         'applied_at'      => $this->applied_at,
-
-    //         'job_post' => $this->whenLoaded('jobPost', function () {
-    //             return [
-    //                 'id'            => $this->jobPost->id,
-    //                 'title'         => $this->jobPost->title,
-    //                 'description'   => $this->jobPost->description,
-    //                 'budget'        => $this->jobPost->budget,
-    //                 'address'       => $this->jobPost->address,
-    //                 'desired_date'  => $this->jobPost->desired_date,
-    //                 'desired_time'  => $this->jobPost->desired_time,
-    //                 'status'        => $this->jobPost->status,
-    //                 'seeker'        => [
-    //                     'id'    => $this->jobPost->seeker->id ?? null,
-    //                     'name'  => $this->jobPost->seeker->name ?? null,
-    //                     'phone' => $this->jobPost->seeker->phone ?? null,
-    //                 ],
-    //             ];
-    //         }),
-    //     ];
-    // }
     public function toArray($request): array
 {
     $jobPost = $this->jobPost;

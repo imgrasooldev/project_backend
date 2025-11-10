@@ -14,8 +14,14 @@ use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\Eloquent\UserRepository;
 use App\Repositories\Interfaces\JobPostRepositoryInterface;
 use App\Repositories\Eloquent\JobPostRepository;
-use App\Repositories\Interfaces\JobApplicationPostRepositoryInterface;
+use App\Repositories\Interfaces\JobApplicationRepositoryInterface;
 use App\Repositories\Eloquent\JobApplicationRepository;
+
+
+use App\Repositories\Interfaces\NotificationRepositoryInterface;
+use App\Repositories\Eloquent\NotificationRepository;
+
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,17 +30,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(NotificationRepositoryInterface::class,NotificationRepository::class);
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(SubcategoryRepositoryInterface::class, SubcategoryRepository::class);
         $this->app->bind(ServiceProviderRepositoryInterface::class, ServiceProviderRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(JobPostRepositoryInterface::class, JobPostRepository::class);
-$this->app->bind(
-    \App\Repositories\Interfaces\JobApplicationRepositoryInterface::class,
-    \App\Repositories\Eloquent\JobApplicationRepository::class
-);
-
-
+        $this->app->bind(JobApplicationRepositoryInterface::class, JobApplicationRepository::class);
     }
 
     /**
