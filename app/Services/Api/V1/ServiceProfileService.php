@@ -51,5 +51,24 @@ public function updateServiceProfileFromUser($id, array $data, User $user)
 }
 
 
+public function deleteServiceProfile($id, $userId)
+{
+    $service = $this->serviceProviderRepo->find($id);
+
+    if ($service->user_id !== $userId) {
+        abort(403, 'You are not allowed to delete this service.');
+    }
+
+    $service->delete();
+
+    return true;
+}
+
+public function deleteServiceProfileFromUser($id, User $user)
+{
+    return $this->deleteServiceProfile($id, $user->id);
+}
+
+
 
 }

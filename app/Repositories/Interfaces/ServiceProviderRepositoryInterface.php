@@ -7,4 +7,6 @@ interface ServiceProviderRepositoryInterface
     public function all($perPage);
     public function find($id);
     public function filter(array $filters, $perPage);
+    public function delete($id);   // ✔ Added
+
 }

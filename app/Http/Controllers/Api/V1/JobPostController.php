@@ -150,6 +150,47 @@ public function serviceRequest(Request $request)
     );
 }
 
+public function destroy(Request $request, $id)
+{
+    try {
+        $post = $this->jobPostRepo->find($id);
+
+        // Access control
+        if ($post->seeker_id !== $request->user()->id) {
+            return $this->sendError('Unauthorized delete attempt.', [], 403);
+        }
+
+        $post->delete(); // soft delete
+
+        return $this->sendResponse([], 'Job post deleted successfully.');
+    } catch (\Exception $e) {
+        return $this->sendError($e->getMessage(), [], 422);
+    }
+}
+
+public function toggleStatus(Request $request, $id)
+{
+    try {
+        $post = $this->jobPostRepo->find($id);
+
+        // Only seeker (owner) can toggle
+        if ($post->seeker_id !== $request->user()->id) {
+            return $this->sendError("Unauthorized.", [], 403);
+        }
+
+        $post->is_active = !$post->is_active;
+        $post->save();
+
+        return $this->sendResponse(
+            new JobPostResource($post),
+            "Job post status updated successfully."
+        );
+
+    } catch (\Exception $e) {
+        return $this->sendError($e->getMessage(), [], 422);
+    }
+}
+
 
 
 

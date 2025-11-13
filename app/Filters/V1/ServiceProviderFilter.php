@@ -9,12 +9,14 @@ class ServiceProviderFilter extends ApiFilter
 {
     protected $safeParms = [
         'subcategoryId' => ['eq'],
-        'areaId' => ['eq']
+        'areaId' => ['eq'],
+        'isActive' => ['eq']
     ];
 
     protected $columnMap = [
         'subcategoryId' => 'subcategory_id',  // ← FIXED this line
-        'areaId' => 'area_id'
+        'areaId' => 'area_id',
+        'isActive' => 'is_active'
     ];
 
     protected $operatorMap = [

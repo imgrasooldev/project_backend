@@ -74,8 +74,8 @@ Route::group([
         Route::get('/', [ServiceProviderController::class, 'index']);       // GET /api/v1/categories
         Route::post('/', [ServiceProviderController::class, 'store']); // ✅ New create route
         Route::put('{id}', [ServiceProviderController::class, 'update']);
-
-
+        Route::delete('{id}', [ServiceProviderController::class, 'destroy']);
+        Route::post('{id}/toggle', [ServiceProviderController::class, 'toggleStatus']);
     });
 
 
@@ -88,7 +88,7 @@ Route::group([
         Route::get('{id}', [JobPostController::class, 'show']);     // GET /api/v1/categories/{id}
         Route::put('{id}', [JobPostController::class, 'update']);   // PUT /api/v1/categories/{id}
         Route::delete('{id}', [JobPostController::class, 'destroy']);// DELETE /api/v1/categories/{id}
-
+        Route::post('{id}/toggle', [JobPostController::class, 'toggleStatus']);
     });
 
     Route::prefix('job-applications')->group(function () {

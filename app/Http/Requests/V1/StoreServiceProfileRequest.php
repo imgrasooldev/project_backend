@@ -19,6 +19,8 @@ class StoreServiceProfileRequest extends FormRequest
             'subcategory_id' => ['required', 'exists:subcategories,id'],
             'available_time' => ['nullable', 'string', 'max:50'], // Not using in logic but allow storing
             'area_id'        => ['nullable', 'exists:areas,id'],  // Add this line
+                        // ✔ newly added toggle field
+            'is_active'      => ['nullable', 'boolean'],       // ✔ added
         ];
     }
 }

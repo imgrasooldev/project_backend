@@ -92,4 +92,31 @@ public function update(StoreServiceProfileRequest $request, $id)
         return $this->sendResponse($success, 'User services retrieved successfully.');
     }
 
+    public function destroy(Request $request, $id)
+    {
+        $this->serviceProfileService->deleteServiceProfileFromUser($id, $request->user());
+
+        return $this->sendResponse([], 'Service deleted successfully.');
+    }
+
+
+    public function toggleStatus(Request $request, $id)
+    {
+        $service = $this->serviceProviderRepo->find($id);
+
+        if ($service->user_id !== $request->user()->id) {
+            return $this->sendError("Unauthorized", [], 403);
+        }
+
+        $service->is_active = !$service->is_active;
+        $service->save();
+
+        return $this->sendResponse(
+            new ServiceProviderResource($service),
+            "Service status updated successfully."
+        );
+    }
+
+
+
 }

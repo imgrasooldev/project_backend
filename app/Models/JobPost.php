@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JobPost extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'title',
         'description',
@@ -16,9 +18,13 @@ class JobPost extends Model
         'desired_date',
         'desired_time',
         'type',
-        'status'
+        'status',
+        'is_active'
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
     public function seeker()
     {
         return $this->belongsTo(User::class, 'seeker_id');

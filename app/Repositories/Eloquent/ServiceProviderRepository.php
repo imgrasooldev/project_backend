@@ -65,5 +65,13 @@ public function updateWithCategory($id, array $data)
     return $serviceProfile;
 }
 
+public function delete($id)
+{
+    $model = $this->find($id);
+    return $model->delete();
+}
+
+
+
 
 }

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ServiceProfile extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $casts = [
         'available_days' => 'array',
@@ -22,7 +24,8 @@ class ServiceProfile extends Model
         'experience',
         'available_days',
         'available_time',
-        'area_id'
+        'area_id',
+        'is_active'
     ];
 
     public function user()

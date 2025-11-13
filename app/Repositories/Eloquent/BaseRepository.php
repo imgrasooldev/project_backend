@@ -40,4 +40,10 @@ abstract class BaseRepository
         $model = $this->find($id);
         return $model->delete();
     }
+    public function forceDelete($id)
+{
+    $model = $this->find($id);
+    return $model->forceDelete();
+}
+
 }
