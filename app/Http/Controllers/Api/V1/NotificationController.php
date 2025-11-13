@@ -34,17 +34,21 @@ class NotificationController extends BaseController
         $success = new NotificationCollection($notifications->appends($request->query()));
         return $this->sendResponse($success, 'Notifications retrieved successfully.');
     } */
-  public function index(Request $request)
-{
+  public function index(Request $request){
     $filter = new NotificationFilter();
     $filterItems = $filter->transform($request);
     $perPage = $request->input('per_page', 10);
+
+    $user = $request->user();
+
+    // 🟢 Force filter for receiver_id = current user
+    $filterItems[] = ['receiver_id', '=', $user->id];
 
     // Notifications (paginated)
     $notifications = $this->notificationRepo->filter($filterItems, $perPage);
 
     // Unread count (independent of pagination)
-    $user = $request->user();
+   
     $role = $request->input('role', 'receiver');
     $unreadCount = $this->notificationRepo->getUnreadCount($user->id, $role);
 
